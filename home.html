@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Codex CLI 안내</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --paper: rgba(255, 251, 245, 0.86);
+      --ink: #182126;
+      --muted: #536067;
+      --line: rgba(24, 33, 38, 0.12);
+      --accent: #c65a2e;
+      --accent-2: #1f6c63;
+      --shadow: 0 24px 60px rgba(40, 33, 24, 0.14);
+      --max: 1180px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(198, 90, 46, 0.18), transparent 32%),
+        radial-gradient(circle at 85% 15%, rgba(31, 108, 99, 0.14), transparent 24%),
+        linear-gradient(180deg, #f7f0e3 0%, var(--bg) 46%, #efe8dc 100%);
+      line-height: 1.6;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(24, 33, 38, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(24, 33, 38, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 85%);
+    }
+
+    .wrap {
+      width: min(calc(100% - 32px), var(--max));
+      margin: 0 auto;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 56px 0 40px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 28px;
+      width: 100%;
+    }
+
+    .card,
+    .panel,
+    .rail,
+    .section-box {
+      background: var(--paper);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .card {
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      right: -40px;
+      top: -40px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(198, 90, 46, 0.22), transparent 70%);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: rgba(24, 33, 38, 0.05);
+      color: var(--muted);
+      font-size: 0.88rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.05;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: clamp(3rem, 7vw, 6.4rem);
+      letter-spacing: -0.05em;
+    }
+
+    .lead {
+      margin: 22px 0 0;
+      max-width: 780px;
+      font-size: 1.12rem;
+      color: var(--muted);
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: transparent;
+      color: #fff8f2;
+    }
+
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.52);
+    }
+
+    .panel {
+      padding: 28px;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .terminal {
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid rgba(24, 33, 38, 0.08);
+      background: #0f171a;
+      color: #d8efe8;
+    }
+
+    .terminal-top {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 0.86rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #ffcf56;
+      box-shadow: 16px 0 0 #ff7a59, 32px 0 0 #4fd19b;
+      margin-right: 30px;
+    }
+
+    .terminal pre {
+      margin: 0;
+      padding: 18px;
+      overflow-x: auto;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      font-family: Consolas, "Courier New", monospace;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.55rem;
+      letter-spacing: -0.04em;
+    }
+
+    section {
+      padding: 28px 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .section-head p {
+      max-width: 620px;
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .grid-3,
+    .grid-2 {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .section-box {
+      padding: 26px;
+      transform: translateY(18px);
+      opacity: 0;
+      animation: rise 700ms ease forwards;
+    }
+
+    .section-box:nth-child(2) {
+      animation-delay: 90ms;
+    }
+
+    .section-box:nth-child(3) {
+      animation-delay: 180ms;
+    }
+
+    .section-box h3 {
+      font-size: 1.35rem;
+      margin-bottom: 12px;
+    }
+
+    .section-box p,
+    .section-box li {
+      color: var(--muted);
+    }
+
+    ul,
+    ol {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+    }
+
+    .timeline-step {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.44);
+    }
+
+    .num {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--accent), #df9465);
+      color: #fff;
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    .label-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .tag {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(31, 108, 99, 0.1);
+      color: var(--accent-2);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .footer {
+      padding: 36px 0 56px;
+      color: var(--muted);
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .hero {
+        min-height: auto;
+        padding-top: 28px;
+      }
+
+      .hero-grid,
+      .grid-3,
+      .grid-2,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 12vw, 4.4rem);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="hero-grid">
+        <article class="card">
+          <div class="eyebrow">Terminal Native AI Workflow</div>
+          <h1>Codex CLI</h1>
+          <p class="lead">
+            Codex CLI는 터미널 안에서 동작하는 AI 코딩 에이전트입니다. 단순 질의응답 도구가 아니라
+            프로젝트 구조를 읽고, 파일을 수정하고, 명령을 실행하고, 결과를 검증하면서 실제 작업 흐름에
+            개입하는 협업형 개발 인터페이스에 가깝습니다.
+          </p>
+          <div class="cta-row">
+            <a class="btn primary" href="#overview">핵심 개요 보기</a>
+            <a class="btn secondary" href="#workflow">작업 흐름 확인</a>
+          </div>
+          <div class="label-row">
+            <span class="tag">코드 탐색</span>
+            <span class="tag">파일 수정</span>
+            <span class="tag">테스트 실행</span>
+            <span class="tag">실행 로그 설명</span>
+          </div>
+        </article>
+
+        <aside class="panel">
+          <div class="terminal">
+            <div class="terminal-top"><span class="dot"></span>codex-cli session</div>
+            <pre>$ codex
+
+사용자: codex cli 를 상세히 설명하는 home.html을 만들어줘
+
+Codex:
+- 현재 워크스페이스 구조 확인
+- 기존 자산과 충돌 없는지 점검
+- 설명형 단일 페이지 설계
+- home.html 생성 및 반응형 스타일 구성
+- 결과 검토 및 마무리 안내</pre>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <strong>CLI</strong>
+              <span>터미널 중심 작업</span>
+            </div>
+            <div class="stat">
+              <strong>AI</strong>
+              <span>자연어 기반 협업</span>
+            </div>
+            <div class="stat">
+              <strong>Code</strong>
+              <span>읽기, 수정, 검증</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </header>
+
+    <main>
+      <section id="overview">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Overview</div>
+            <h2>Codex CLI란 무엇인가</h2>
+          </div>
+          <p>
+            일반적인 채팅형 AI가 설명을 제공하는 수준에 머문다면, Codex CLI는 실제 로컬 작업 디렉터리와
+            연결되어 개발자의 실행 단계를 함께 처리하는 도구입니다.
+          </p>
+        </div>
+        <div class="grid-3">
+          <article class="section-box">
+            <h3>1. 터미널 안에서 움직이는 에이전트</h3>
+            <p>
+              쉘 명령 실행, 파일 검색, 코드 읽기, 수정, 테스트 같은 일을 터미널 흐름 안에서 처리합니다.
+              즉, 설명만 하는 것이 아니라 실제 개발 작업의 일부를 수행합니다.
+            </p>
+          </article>
+          <article class="section-box">
+            <h3>2. 자연어와 코드 작업의 결합</h3>
+            <p>
+              사용자는 “이 오류 고쳐줘”, “이 페이지 만들어줘”, “이 함수 설명해줘”처럼 자연어로 요청하고,
+              에이전트는 코드베이스 맥락을 읽은 뒤 필요한 액션을 순차적으로 수행합니다.
+            </p>
+          </article>
+          <article class="section-box">
+            <h3>3. 단순 자동완성보다 넓은 범위</h3>
+            <p>
+              한 줄 제안이 아니라 파일 간 관계를 이해하고, 관련 테스트나 설정까지 고려하며, 최종적으로
+              사용자가 바로 이어서 작업할 수 있는 상태를 목표로 합니다.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Capabilities</div>
+            <h2>무엇을 할 수 있는가</h2>
+          </div>
+          <p>
+            기능은 단순 생성이 아니라 개발 라이프사이클 전반에 걸쳐 분포합니다. 아래 항목들이 Codex CLI의
+            핵심 활용 구간입니다.
+          </p>
+        </div>
+        <div class="grid-2">
+          <article class="section-box">
+            <h3>코드 이해와 분석</h3>
+            <ul>
+              <li>프로젝트 구조 탐색</li>
+              <li>특정 함수, 클래스, 컴포넌트 역할 설명</li>
+              <li>에러 원인 추적과 의존성 파악</li>
+              <li>변경 영향 범위 분석</li>
+            </ul>
+          </article>
+          <article class="section-box">
+            <h3>구현과 수정</h3>
+            <ul>
+              <li>새 HTML, CSS, JS 파일 생성</li>
+              <li>기존 코드 리팩터링</li>
+              <li>버그 수정</li>
+              <li>기능 추가와 구조 정리</li>
+            </ul>
+          </article>
+          <article class="section-box">
+            <h3>검증과 실행</h3>
+            <ul>
+              <li>테스트 실행</li>
+              <li>빌드 또는 린트 확인</li>
+              <li>명령 결과 요약</li>
+              <li>실패 원인과 후속 조치 제안</li>
+            </ul>
+          </article>
+          <article class="section-box">
+            <h3>문서화와 설명</h3>
+            <ul>
+              <li>README 초안 작성</li>
+              <li>기능 사용법 문서화</li>
+              <li>변경사항 요약</li>
+              <li>코드 리뷰 관점의 리스크 정리</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="workflow">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Workflow</div>
+            <h2>Codex CLI의 전형적인 작업 흐름</h2>
+          </div>
+          <p>
+            실무에서 중요한 것은 “답변”보다 “작업 완료”입니다. Codex CLI는 보통 아래 순서로 움직입니다.
+          </p>
+        </div>
+        <div class="timeline">
+          <article class="timeline-step section-box">
+            <div class="num">01</div>
+            <div>
+              <h3>요청 해석</h3>
+              <p>
+                사용자의 자연어 요청을 기능 추가, 버그 수정, 분석, 문서화 같은 작업 유형으로 해석합니다.
+              </p>
+            </div>
+          </article>
+          <article class="timeline-step section-box">
+            <div class="num">02</div>
+            <div>
+              <h3>코드베이스 탐색</h3>
+              <p>
+                파일 구조와 관련 모듈을 확인해 현재 상태를 파악합니다. 기존 구현과 충돌하지 않도록 맥락을 먼저 읽습니다.
+              </p>
+            </div>
+          </article>
+          <article class="timeline-step section-box">
+            <div class="num">03</div>
+            <div>
+              <h3>필요한 변경 수행</h3>
+              <p>
+                파일 생성, 수정, 설정 변경, 문서 정리 등을 진행합니다. 단순 제안이 아니라 실제 작업을 적용합니다.
+              </p>
+            </div>
+          </article>
+          <article class="timeline-step section-box">
+            <div class="num">04</div>
+            <div>
+              <h3>검증</h3>
+              <p>
+                가능한 경우 테스트, 린트, 빌드, 실행 명령을 통해 변경이 유효한지 점검합니다.
+              </p>
+            </div>
+          </article>
+          <article class="timeline-step section-box">
+            <div class="num">05</div>
+            <div>
+              <h3>결과 보고</h3>
+              <p>
+                무엇을 바꿨는지, 어디를 확인하면 되는지, 아직 남은 리스크가 있는지 간결하게 설명합니다.
+              </p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Strengths</div>
+            <h2>왜 유용한가</h2>
+          </div>
+          <p>
+            핵심 가치는 속도보다 문맥 유지입니다. 여러 파일과 도구를 오가며 사람이 하던 반복 작업을 하나의 대화 흐름으로 묶습니다.
+          </p>
+        </div>
+        <div class="grid-3">
+          <article class="section-box">
+            <h3>작업 전환 비용 감소</h3>
+            <p>
+              편집기, 문서, 터미널, 검색을 계속 오가지 않고 한 세션 안에서 요청과 실행이 이어집니다.
+            </p>
+          </article>
+          <article class="section-box">
+            <h3>맥락 기반 응답</h3>
+            <p>
+              현재 디렉터리의 실제 파일을 읽고 답하기 때문에 일반론보다 훨씬 구체적인 제안을 할 수 있습니다.
+            </p>
+          </article>
+          <article class="section-box">
+            <h3>실행 가능한 결과</h3>
+            <p>
+              초안, 설명, 수정 패치, 테스트 시도까지 연결되므로 “무엇을 해야 하는지”가 아니라 “어디까지 끝났는지”가 명확합니다.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Caution</div>
+            <h2>알아둘 점</h2>
+          </div>
+          <p>
+            Codex CLI가 강력하더라도 모든 상황에서 무비판적으로 맡기면 안 됩니다. 특히 아래 항목은 항상 점검해야 합니다.
+          </p>
+        </div>
+        <div class="grid-2">
+          <article class="section-box">
+            <h3>검토 책임은 사용자에게 남는다</h3>
+            <p>
+              생성된 코드와 수정 내용은 최종적으로 사람이 검토해야 합니다. 보안, 성능, 도메인 규칙은 특히 직접 확인하는 편이 안전합니다.
+            </p>
+          </article>
+          <article class="section-box">
+            <h3>권한과 환경 제약이 있다</h3>
+            <p>
+              네트워크 제한, 파일 시스템 권한, 실행 정책 같은 환경 조건에 따라 가능한 작업 범위가 달라질 수 있습니다.
+            </p>
+          </article>
+          <article class="section-box">
+            <h3>명확한 요청일수록 결과가 좋다</h3>
+            <p>
+              목표 파일, 원하는 톤, 기술 스택, 제약조건이 분명할수록 더 적합한 결과가 나옵니다.
+            </p>
+          </article>
+          <article class="section-box">
+            <h3>검증 단계가 중요하다</h3>
+            <p>
+              코드 수정이 끝났다고 완료가 아닙니다. 테스트나 실제 실행을 통해 결과를 확인해야 품질이 확보됩니다.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Example</div>
+            <h2>어떤 요청에 잘 맞는가</h2>
+          </div>
+          <p>
+            아래처럼 결과물이 분명하고 실제 코드 작업이 필요한 요청에서 특히 강점을 보입니다.
+          </p>
+        </div>
+        <div class="grid-2">
+          <article class="section-box">
+            <h3>프론트엔드 제작</h3>
+            <ol>
+              <li>랜딩 페이지 만들어줘</li>
+              <li>기존 UI를 모바일 대응되게 고쳐줘</li>
+              <li>디자인 시스템에 맞춰 컴포넌트 정리해줘</li>
+            </ol>
+          </article>
+          <article class="section-box">
+            <h3>개발 생산성 작업</h3>
+            <ol>
+              <li>이 에러 원인 찾아서 고쳐줘</li>
+              <li>테스트 깨지는 부분만 최소 수정해줘</li>
+              <li>이 디렉터리 구조를 설명해줘</li>
+            </ol>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="section-box">
+        <h3>정리</h3>
+        <p>
+          Codex CLI는 “터미널에서 대화하는 AI”가 아니라 “터미널에서 실제 개발 작업을 함께 수행하는 AI 코딩 에이전트”로 이해하는 편이 정확합니다.
+          프로젝트를 읽고, 수정하고, 검증하고, 그 결과를 설명하는 데 초점이 있습니다.
+        </p>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
