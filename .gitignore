@@ -9,3 +9,4 @@ frontend/*.log
 
 backend/.venv/
 backend/*.log
+.env
