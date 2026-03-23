@@ -1,0 +1,7 @@
+model/
+run_logs/
+__pycache__/
+tests/.tmp/
+out_results/
+in_files/
+src/*.egg-info/

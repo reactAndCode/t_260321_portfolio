@@ -1,0 +1,15 @@
+models:
+  small: "D:/dev/vibe_coding/codex_연습/a_02_codex_cli/stt/model/small"
+  large: "D:/dev/vibe_coding/codex_연습/a_02_codex_cli/stt/model/large"
+default_model: "large"
+device: "cpu"
+compute_type: "int8"
+language: null
+beam_size: 5
+output_dir: "out_results"
+supported_extensions:
+  - ".mp3"
+  - ".wav"
+  - ".m4a"
+  - ".flac"
+  - ".ogg"
