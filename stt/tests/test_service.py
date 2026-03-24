@@ -3,7 +3,8 @@ import unittest
 from pathlib import Path
 
 from stt_cli.config import RuntimeConfig
-from stt_cli.service import transcribe_files
+from stt_cli.service import ProgressUpdate, transcribe_files
+from stt_cli.writer import build_transcript_filename
 
 
 class FakeTranscriber:
@@ -45,7 +46,7 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].status, "success")
         self.assertEqual(results[0].transcript, "transcript:a")
-        self.assertTrue((self.output_dir / "a.txt").is_file())
+        self.assertTrue((self.output_dir / "a_변환후결과.txt").is_file())
 
     def test_transcribe_files_collects_failures(self) -> None:
         success_file = self.test_root / "a.wav"
@@ -74,6 +75,45 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(results[1].status, "failed")
         self.assertEqual(results[1].error_message, "mock failure")
         self.assertIsNone(results[0].output_path)
+
+    def test_transcribe_files_reports_progress(self) -> None:
+        first_file = self.test_root / "a.wav"
+        second_file = self.test_root / "b.wav"
+        first_file.write_text("x", encoding="utf-8")
+        second_file.write_text("x", encoding="utf-8")
+        runtime_config = RuntimeConfig(
+            model_name="small",
+            model_path=Path("D:/models/small"),
+            device="cpu",
+            compute_type="int8",
+            language=None,
+            beam_size=5,
+            output_dir=self.output_dir,
+            supported_extensions=(".wav",),
+        )
+        updates: list[ProgressUpdate] = []
+
+        results = transcribe_files(
+            [first_file, second_file],
+            runtime_config,
+            FakeTranscriber(),
+            save_output=False,
+            progress_callback=updates.append,
+        )
+
+        self.assertEqual(len(results), 2)
+        self.assertEqual(len(updates), 2)
+        self.assertEqual(updates[0].completed_count, 1)
+        self.assertEqual(updates[0].total_count, 2)
+        self.assertEqual(updates[0].current_file_name, "a.wav")
+        self.assertEqual(updates[1].completed_count, 2)
+        self.assertEqual(updates[1].estimated_remaining_seconds, 0.0)
+
+    def test_build_transcript_filename_uses_requested_suffix(self) -> None:
+        self.assertEqual(
+            build_transcript_filename("sample.wav"),
+            "sample_변환후결과.txt",
+        )
 
 
 if __name__ == "__main__":
